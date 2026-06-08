@@ -1,0 +1,1 @@
+I will be learning and building a portfolio docker project with FastAPI and CICD with github actions
