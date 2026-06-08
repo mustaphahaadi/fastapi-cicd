@@ -4,3 +4,5 @@ The Dockerfile uses a multi-stage build:
 
 Stage 1 (builder): Installs all Python dependencies
 Stage 2 (runtime): Copies only the installed packages + app code — no build tools in the final image
+
+This keeps the production image lean and secure. A non-root user (appuser) runs the process.
