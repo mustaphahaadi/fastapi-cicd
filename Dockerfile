@@ -1,28 +1,29 @@
-
+# ─────────────────────────────────────────────
 # Stage 1: Builder — install dependencies
-
+# ─────────────────────────────────────────────
 FROM python:3.12-slim AS builder
 
-WORKDIR /app
-
-# Create a venv so packages land in a known, copyable location
+# Create venv BEFORE setting WORKDIR
 RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+
+WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
 
 
-
+# ─────────────────────────────────────────────
 # Stage 2: Runtime — lean production image
-
+# ─────────────────────────────────────────────
 FROM python:3.12-slim AS runtime
 
-WORKDIR /app
-
-# Copy the entire venv from builder — no build tools included
+# Copy the entire venv from builder
 COPY --from=builder /opt/venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+
+# Verify the copy worked (fails build loudly if not)
+RUN ls /opt/venv/bin/uvicorn
+
+WORKDIR /app
 
 # Copy application code
 COPY app/ ./app/
@@ -32,6 +33,7 @@ RUN useradd --no-create-home --shell /bin/false appuser
 USER appuser
 
 ENV APP_ENV=production
+ENV PATH="/opt/venv/bin:$PATH"
 
 EXPOSE 8000
 
